@@ -1,31 +1,19 @@
-## Micronaut 3.3.4 Documentation
+# Relation Cascade Insert not working
 
-- [User Guide](https://docs.micronaut.io/3.3.4/guide/index.html)
-- [API Reference](https://docs.micronaut.io/3.3.4/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/3.3.4/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
----
+Demo that shows that @Relation does not work for cascading inserts 
+```
+@field:Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "parentId", cascade = [Relation.Cascade.ALL])
+```
 
-- [Shadow Gradle Plugin](https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow)
-## Feature http-client documentation
+Test that exposes the bug: `JdbcRelationDemoTest`
 
-- [Micronaut HTTP Client documentation](https://docs.micronaut.io/latest/guide/index.html#httpClient)
+## Additional Informatoin
+According to the debug logs (below) the child relation is used.
+However, binding does not happen and ultimately the child-relation is not persisted. 
 
-
-## Feature jdbc-hikari documentation
-
-- [Micronaut Hikari JDBC Connection Pool documentation](https://micronaut-projects.github.io/micronaut-sql/latest/guide/index.html#jdbc)
-
-
-## Feature liquibase documentation
-
-- [Micronaut Liquibase Database Migration documentation](https://micronaut-projects.github.io/micronaut-liquibase/latest/guide/index.html)
-
-- [https://www.liquibase.org/](https://www.liquibase.org/)
-
-
-## Feature data-jdbc documentation
-
-- [Micronaut Data JDBC documentation](https://micronaut-projects.github.io/micronaut-data/latest/guide/index.html#jdbc)
-
-
+```
+[Test worker] DEBUG io.micronaut.data.query - Executing SQL Insert: INSERT INTO `parent` (`name`,`id`) VALUES (?,?)
+[Test worker] TRACE io.micronaut.data.query - Binding parameter at position 1 to value parent with data type: STRING
+[Test worker] TRACE io.micronaut.data.query - Binding parameter at position 2 to value 1 with data type: INTEGER
+[Test worker] DEBUG io.micronaut.data.query - Executing Batch SQL Insert: INSERT INTO `child` (`name`,`parent_id`,`id`) VALUES (?,?,?)
+```
